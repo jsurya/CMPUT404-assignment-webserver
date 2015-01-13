@@ -30,11 +30,14 @@ import string
 import os.path
 import time
 
+BASEPATH = "./www"
+
 class MyWebServer(SocketServer.BaseRequestHandler):
 
-    def HTTP200_OK(self, fileLen):
+    def HTTP200_OK(self, fileLen, fileType):
         self.request.sendall("HTTP/1.1 200 OK\nDate: " + 
-            time.strftime("%c") + "\n Content-Type: text/html\n" + "Content-Length: " + str(fileLen))
+            time.strftime("%c") + "\nContent-Type: text/" + fileType + "\n" + "Content-Length: " 
+            + str(fileLen) + "\n\n")
 
     def HTTP404_NOT_FOUND(self):
         self.request.sendall("HTTP/1.1 404 Not Found!\nDate: " + time.strftime("%c") +
@@ -47,15 +50,22 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         args = string.split(self.data, " ")
         filePath = args[1]
         print filePath
+        if os.path.exists(BASEPATH + filePath):
+            if filePath == '/':
+                filePath = "/index.html"
 
-        if os.path.exists('.' + filePath):
-            print "200 OK\n"
-            fileLen = os.path.getsize('.' + filePath)
+            fileLen = os.path.getsize(BASEPATH + filePath)
+            fileType = filePath.split('.')[-1]
             print fileLen
-            self.HTTP200_OK(fileLen)
-            reqFile = open('.' + filePath, 'w')
-            self.request.sendall(reqFile)
-            reqFile.close()
+            try:
+                self.HTTP200_OK(fileLen, fileType)
+                reqFile = open(BASEPATH + filePath, 'r+')
+                self.request.sendall(reqFile.read())
+                reqFile.close()
+
+            except:
+                print "404 Not Found!\n"
+                self.HTTP404_NOT_FOUND()
 
         else:
             print "404 Not Found!\n"
@@ -66,10 +76,6 @@ class MyWebServer(SocketServer.BaseRequestHandler):
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print "Got a request of: %s\n" % self.data
-
-        # client_request = urllib2.urlopen(self.data)
-        # print client_request.info()
-        # html = client_request.read()
 
         if string.find(self.data, "GET /") == 0:
             self.request_GET()
