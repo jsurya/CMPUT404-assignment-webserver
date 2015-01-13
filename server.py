@@ -26,13 +26,48 @@ import SocketServer
 
 # try: curl -v -X GET http://127.0.0.1:8080/
 
+import string
+import os.path
+import urllib
+import urllib2
+import httplib
 
 class MyWebServer(SocketServer.BaseRequestHandler):
-    
+
+    def request_GET(self):
+        args = string.split(self.data, " ")
+        file_path = args[1]
+        print file_path
+
+        if os.path.exists('.' + file_path) == True:
+            if os.path.isfile('.' + file_path) == True:
+                print "Valid file\n"
+                self.request.sendall("Valid file\n")
+        
+            else:
+                print "200 OK Not FOUND!\n"
+                self.request.sendall("200 OK Not FOUND!\n")
+        else:
+            print "404 Not Found!\n"
+            self.request.sendall("404 Not Found!\n")
+            self.request.sendall(httplib.responses[httplib.NOT_FOUND])
+
+        return
+
     def handle(self):
         self.data = self.request.recv(1024).strip()
-        print ("Got a request of: %s\n" % self.data)
-        self.request.sendall("OK")
+        print "Got a request of: %s\n" % self.data
+
+        # client_request = urllib2.urlopen(self.data)
+        # print client_request.info()
+        # html = client_request.read()
+
+        if string.find(self.data, "GET /") == 0:
+            self.request_GET()
+
+        return
+
+
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
@@ -44,3 +79,5 @@ if __name__ == "__main__":
     # Activate the server; this will keep running until you
     # interrupt the program with Ctrl-C
     server.serve_forever()
+
+
