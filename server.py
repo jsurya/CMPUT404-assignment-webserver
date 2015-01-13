@@ -28,30 +28,39 @@ import SocketServer
 
 import string
 import os.path
-import urllib
-import urllib2
-import httplib
+import time
 
 class MyWebServer(SocketServer.BaseRequestHandler):
 
+    def HTTP200_OK(self, fileLen):
+        self.request.sendall("HTTP/1.1 200 OK\nDate: " + 
+            time.strftime("%c") + "\n Content-Type: text/html\n" + "Content-Length: " + str(fileLen))
+
+    def HTTP404_NOT_FOUND(self):
+        self.request.sendall("HTTP/1.1 404 Not Found!\nDate: " + time.strftime("%c") +
+            "\nContent-Type: text/html\nContent-Length: 117\n\n" +
+            "<html><body>\n<h2>Document not found</h2>\n" +
+            "You asked for a document that doesn't exist. " +
+            "That is so sad.\n</body></html>\n")
+
     def request_GET(self):
         args = string.split(self.data, " ")
-        file_path = args[1]
-        print file_path
+        filePath = args[1]
+        print filePath
 
-        if os.path.exists('.' + file_path) == True:
-            if os.path.isfile('.' + file_path) == True:
-                print "Valid file\n"
-                self.request.sendall("Valid file\n")
-        
-            else:
-                print "200 OK Not FOUND!\n"
-                self.request.sendall("200 OK Not FOUND!\n")
+        if os.path.exists('.' + filePath):
+            print "200 OK\n"
+            fileLen = os.path.getsize('.' + filePath)
+            print fileLen
+            self.HTTP200_OK(fileLen)
+            reqFile = open('.' + filePath, 'w')
+            self.request.sendall(reqFile)
+            reqFile.close()
+
         else:
             print "404 Not Found!\n"
-            self.request.sendall("404 Not Found!\n")
-            self.request.sendall(httplib.responses[httplib.NOT_FOUND])
-
+            self.HTTP404_NOT_FOUND()
+            
         return
 
     def handle(self):
@@ -64,10 +73,7 @@ class MyWebServer(SocketServer.BaseRequestHandler):
 
         if string.find(self.data, "GET /") == 0:
             self.request_GET()
-
         return
-
-
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
