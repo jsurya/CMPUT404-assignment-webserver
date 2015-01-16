@@ -26,6 +26,8 @@ import SocketServer
 
 # try: curl -v -X GET http://127.0.0.1:8080/
 
+#
+
 import string
 import os.path
 import time
@@ -46,31 +48,46 @@ class MyWebServer(SocketServer.BaseRequestHandler):
             "You asked for a document that doesn't exist. " +
             "That is so sad.\n</body></html>\n")
 
+    def HTTP303_Redirect(self, newURL):
+        self.request.sendall("HTTP/1.1 303 See Other\nDate: " + time.strftime("%c") +
+            "\nLocation: " + newURL +
+            "\nContent-Type: text/html\nContent-Length: \n\n" +
+            "<html><body>\n<h2>Document Moved</h2>\n" +
+            "You asked for a document has moved. " +
+            "That is so sad.\n</body></html>\n")
+
     def request_GET(self):
         args = string.split(self.data, " ")
         filePath = args[1]
-        print filePath
 
         norm_path = os.path.normpath(BASEPATH)
         normalizedPath = os.path.normpath(norm_path + filePath)
 
-        if (normalizedPath.find(norm_path) == 0) and (os.path.isfile(normalizedPath)) or (os.path.isfile(normalizedPath + "/index.html")):
+        if (os.path.isfile(normalizedPath)) or (os.path.isfile(normalizedPath + "/index.html")):
 
-            if filePath == '/':
-                filePath = "/index.html"
+            if filePath[-5:] == "/deep":
+               newURL = filePath + '/'
+               self.HTTP303_Redirect(newURL)
+
+            if filePath[-1] == '/':
+                filePath += "index.html"
+                normalizedPath = os.path.normpath(norm_path + filePath)
 
             fileLen = os.path.getsize(BASEPATH + filePath)
             fileType = filePath.split('.')[-1]
-            print fileLen
+
             try:
+                reqFile = open(normalizedPath, 'r+')
+
+            except IOError as e:
+                print "File could not be opened\n"
+                self.HTTP404_NOT_FOUND()
+
+            else:
                 self.HTTP200_OK(fileLen, fileType)
-                reqFile = open(BASEPATH + filePath, 'r+')
+                
                 self.request.sendall(reqFile.read())
                 reqFile.close()
-
-            except:
-                print "404 Not Found!\n"
-                self.HTTP404_NOT_FOUND()
 
         else:
             print "404 Not Found!\n"
