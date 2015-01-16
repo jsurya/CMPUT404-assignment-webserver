@@ -26,7 +26,9 @@ import SocketServer
 
 # try: curl -v -X GET http://127.0.0.1:8080/
 
-#
+# CMPUT 410 Winter 2015 Assignment Submission
+# Due: January 19. 2015
+# Contributors: Jessica Surya , Paul Nhan
 
 import string
 import os.path
@@ -60,15 +62,17 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         args = string.split(self.data, " ")
         filePath = args[1]
 
+        # Normalize paths
         norm_path = os.path.normpath(BASEPATH)
         normalizedPath = os.path.normpath(norm_path + filePath)
 
         if (os.path.isfile(normalizedPath)) or (os.path.isfile(normalizedPath + "/index.html")):
-
+            # Redirect "/deep" to "/deep/"
             if filePath[-5:] == "/deep":
                newURL = filePath + '/'
                self.HTTP303_Redirect(newURL)
 
+            # Direct paths to directory to index.html file
             if filePath[-1] == '/':
                 filePath += "index.html"
                 normalizedPath = os.path.normpath(norm_path + filePath)
@@ -81,18 +85,18 @@ class MyWebServer(SocketServer.BaseRequestHandler):
 
             except IOError as e:
                 print "File could not be opened\n"
+                # Display 404 Error as specified in Requirements.org
                 self.HTTP404_NOT_FOUND()
 
             else:
+                # Send 200 OK followed by requested file
                 self.HTTP200_OK(fileLen, fileType)
-                
                 self.request.sendall(reqFile.read())
                 reqFile.close()
 
         else:
             print "404 Not Found!\n"
             self.HTTP404_NOT_FOUND()
-            
         return
 
     def handle(self):
