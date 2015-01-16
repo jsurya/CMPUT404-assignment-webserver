@@ -50,7 +50,12 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         args = string.split(self.data, " ")
         filePath = args[1]
         print filePath
-        if os.path.exists(BASEPATH + filePath):
+
+        norm_path = os.path.normpath(BASEPATH)
+        normalizedPath = os.path.normpath(norm_path + filePath)
+
+        if (normalizedPath.find(norm_path) == 0) and (os.path.isfile(normalizedPath)) or (os.path.isfile(normalizedPath + "/index.html")):
+
             if filePath == '/':
                 filePath = "/index.html"
 
