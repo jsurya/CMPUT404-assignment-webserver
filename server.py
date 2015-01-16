@@ -1,7 +1,7 @@
 import SocketServer
 # coding: utf-8
 
-# Copyright 2013 Abram Hindle, Eddie Antonio Santos
+# Copyright 2015 Jessica Surya, Paul Nhan
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,8 @@ import SocketServer
 
 # CMPUT 410 Winter 2015 Assignment Submission
 # Due: January 19. 2015
-# Contributors: Jessica Surya , Paul Nhan
+# Original assignment creators: Abram Hindle, Eddie Antonio Santos
+# Assignment Contributors: Jessica Surya (jsurya) , Paul Nhan (pnhan)
 
 import string
 import os.path
