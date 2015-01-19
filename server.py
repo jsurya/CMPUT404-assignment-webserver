@@ -54,7 +54,7 @@ class MyWebServer(SocketServer.BaseRequestHandler):
     def HTTP303_Redirect(self, newURL):
         self.request.sendall("HTTP/1.1 303 See Other\nDate: " + time.strftime("%c") +
             "\nLocation: " + newURL +
-            "\nContent-Type: text/html\nContent-Length: \n\n" +
+            "\nContent-Type: text/html\nContent-Length: 104\n\n" +
             "<html><body>\n<h2>Document Moved</h2>\n" +
             "You asked for a document has moved. " +
             "That is so sad.\n</body></html>\n")
